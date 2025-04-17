@@ -81,14 +81,6 @@ WSGI_APPLICATION = 'Assignment2_backend.wsgi.app'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -97,6 +89,14 @@ DATABASES = {
         'PASSWORD': 'npg_l6chXBMGq9EU',
         'HOST': 'ep-curly-lake-a7ywuelp-pooler.ap-southeast-2.aws.neon.tech',
         'PORT': '5432',
+        'CONN_MAX_AGE': 0,  # close connections after each request
+        'OPTIONS': {
+            'connect_timeout': 10,
+            'sslmode': 'require',
+        },
+        'TEST': {
+            'NAME': 'test_neondb',
+        },
     }
 }
 
