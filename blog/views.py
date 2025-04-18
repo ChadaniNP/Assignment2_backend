@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import BlogPost
 
+# NOTE: This is a demo change for pull request review purposes.
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
