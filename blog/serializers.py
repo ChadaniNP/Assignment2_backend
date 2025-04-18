@@ -38,4 +38,5 @@ class LoginSerializer(serializers.Serializer):
 class BlogPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
-        fields = ['title', 'content', 'author']
+        fields = ['id', 'title', 'content', 'author']
+        read_only_fields = ['id', 'author']
