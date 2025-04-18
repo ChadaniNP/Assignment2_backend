@@ -6,8 +6,6 @@ from .models import BlogPost
 from .serializers import BlogPostSerializer
 from rest_framework.authtoken.models import Token
 
-# NOTE: This is a demo change for pull request review purposes.
-
 class BlogPostCreateViewTestCase(APITestCase):
     def setUp(self):
         # Create a test user

@@ -3,8 +3,6 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User, BlogPost
 
-# NOTE: This is a demo change for pull request review purposes.
-
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
