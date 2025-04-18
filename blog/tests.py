@@ -95,3 +95,46 @@ class BlogAPIIntegrationTestCase(APITestCase):
         self.assertEqual(response.status_code, 204)
         # Verify token is deleted
         self.assertFalse(Token.objects.filter(user__username='newuser').exists())
+
+class BlogPostDeleteTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='deleteuser', password='testpass123')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        self.blog_post = BlogPost.objects.create(
+            title='Delete Me',
+            content='Please delete this post',
+            author=self.user
+        )
+
+    def test_user_can_delete_own_blog_post(self):
+        response = self.client.delete(
+            reverse('blog-post-delete', kwargs={'pk': self.blog_post.id})
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(BlogPost.objects.filter(id=self.blog_post.id).exists())
+
+    def test_user_cannot_delete_others_blog_post(self):
+        other_user = User.objects.create_user(username='otheruser', password='pass1234')
+        other_post = BlogPost.objects.create(
+            title='Not yours!',
+            content='Cannot delete this!',
+            author=other_user
+        )
+        response = self.client.delete(
+            reverse('blog-post-delete', kwargs={'pk': other_post.id})
+        )
+        self.assertEqual(response.status_code, 404)  # Because filtered queryset hides it
+
+    def test_complete_blog_flow(self):
+        # [All your previous steps: register, login, create post...]
+
+        # Get the blog post ID
+        blog_post_id = BlogPost.objects.get(title='Integration Test Blog').id
+
+        # 5. Delete the blog post
+        response = self.client.delete(
+            reverse('blog-post-delete', kwargs={'pk': blog_post_id})
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(BlogPost.objects.filter(id=blog_post_id).exists())
