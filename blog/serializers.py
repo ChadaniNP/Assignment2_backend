@@ -36,6 +36,15 @@ class LoginSerializer(serializers.Serializer):
         return {'token': token.key}
 
 class BlogPostSerializer(serializers.ModelSerializer):
+    """
+    Serializer for BlogPost model. Handles serialization and validation.
+    
+    The 'fields' attribute lists all model fields that should be exposed via the API.
+    The 'read_only_fields' attribute ensures that certain fields (like 'id', 'author', 'created_at')
+    are included in API responses but cannot be set or modified by the user. This is important for
+    fields that are auto-generated or managed by the system for security and data integrity.
+    """
     class Meta:
         model = BlogPost
-        fields = ['title', 'content', 'author']
+        fields = ['id', 'title', 'content', 'author', 'created_at']
+        read_only_fields = ['id', 'author', 'created_at']
