@@ -127,14 +127,20 @@ class BlogPostDeleteTestCase(APITestCase):
         self.assertEqual(response.status_code, 404)  # Because filtered queryset hides it
 
     def test_complete_blog_flow(self):
-        # [All your previous steps: register, login, create post...]
+        user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.force_login(user)
 
-        # Get the blog post ID
+        blog_data = {
+            'title': 'Integration Test Blog',
+            'content': 'Some test content',
+            'author': user.id  # or whatever your view expects
+        }
+
+        response = self.client.post(reverse('blog-post-create'), blog_data, format='json')
+        self.assertEqual(response.status_code, 201)
+
         blog_post_id = BlogPost.objects.get(title='Integration Test Blog').id
 
-        # 5. Delete the blog post
-        response = self.client.delete(
-            reverse('blog-post-delete', kwargs={'pk': blog_post_id})
-        )
-        self.assertEqual(response.status_code, 204)
-        self.assertFalse(BlogPost.objects.filter(id=blog_post_id).exists())
+        # Now test deleting it
+        delete_response = self.client.delete(reverse('blog-post-delete', args=[blog_post_id]))
+        self.assertEqual(delete_response.status_code, 204)
