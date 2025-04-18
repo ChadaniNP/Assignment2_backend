@@ -45,3 +45,11 @@ class BlogPostCreateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class BlogPostListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        blog_posts = BlogPost.objects.filter(author=request.user)
+        serializer = BlogPostSerializer(blog_posts, many=True)
+        return Response(serializer.data)
