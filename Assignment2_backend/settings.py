@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
+'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
     'blog.apps.BlogConfig',
@@ -98,6 +98,15 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+import sys
+
+if 'test' in sys.argv or 'pytest' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
 
 
 # Password validation
