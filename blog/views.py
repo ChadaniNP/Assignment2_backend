@@ -1,4 +1,3 @@
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -6,9 +5,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .serializers import RegisterSerializer, LoginSerializer, BlogPostSerializer
 from .models import BlogPost
-from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 
 # Register a new user
 class RegisterView(APIView):
@@ -49,9 +49,16 @@ class BlogPostCreateView(APIView):
         data = request.data.copy()
         data['author'] = request.user.id
         serializer = BlogPostSerializer(data=data)
+
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            post = serializer.save()
+            return Response({
+                'id': post.id,
+                'title': post.title,
+                'content': post.content,
+                'author': post.author.username,
+            }, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -76,3 +83,24 @@ class BlogPostDeleteView(generics.DestroyAPIView):
 
         blog_post.delete()
         return Response({"detail": "Blog post deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class LikePostView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure only authenticated users can like the post
+
+    def post(self, request, post_id):
+        try:
+            post = BlogPost.objects.get(id=post_id)
+        except BlogPost.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=404)
+
+        # Check if the user has already liked the post
+        if post.likes.filter(id=request.user.id).exists():
+            post.likes.remove(request.user)
+            return Response({'status': 'post unliked'})
+        else:
+            post.likes.add(request.user)
+            return Response({'status': 'post liked'})
+        print("Looking for post ID:", post_id)
+        print("Available posts:", BlogPost.objects.all())
+
