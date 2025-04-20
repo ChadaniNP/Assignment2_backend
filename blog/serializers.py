@@ -50,7 +50,6 @@ class BlogPostSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'author', 'created_at']
 
     def create(self, validated_data):
-        # Ensure author is always set from context (request.user)
         request = self.context.get('request', None)
         if request and hasattr(request, 'user'):
             validated_data['author'] = request.user
