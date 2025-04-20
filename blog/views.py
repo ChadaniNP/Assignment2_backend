@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import BlogPost
-from .serializers import BlogPostSerializer, RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, BlogPostSerializer
 from django.shortcuts import get_object_or_404
 
 class RegisterView(APIView):
@@ -17,22 +17,11 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # Extract username and password from request data
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
-        # Validate required fields
-        if not username or not password:
-            return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check for existing username
-        if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Create a new user and generate auth token
-        user = User.objects.create_user(username=username, password=password)
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
     """
@@ -41,17 +30,10 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # Extract username and password from request data
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
-        # Authenticate user
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            # Generate auth token for authenticated user
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key})
-        return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
     """
@@ -71,10 +53,8 @@ class BlogPostCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Serialize blog post data
-        serializer = BlogPostSerializer(data=request.data)
+        serializer = BlogPostSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            # Save blog post with authenticated user as author
             serializer.save(author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -98,18 +78,11 @@ class BlogPostUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, pk):
-        # Full update of a blog post
-        blog_post = get_object_or_404(BlogPost, pk=pk, author=request.user)
-        serializer = BlogPostSerializer(blog_post, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, pk):
-        # Partial update of a blog post
-        blog_post = get_object_or_404(BlogPost, pk=pk, author=request.user)
-        serializer = BlogPostSerializer(blog_post, data=request.data, partial=True)
+        try:
+            blog_post = BlogPost.objects.get(pk=pk, author=request.user)
+        except BlogPost.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = BlogPostSerializer(blog_post, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -122,7 +95,9 @@ class BlogPostDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
-        # Retrieve blog post to delete
-        blog_post = get_object_or_404(BlogPost, pk=pk, author=request.user)
+        try:
+            blog_post = BlogPost.objects.get(pk=pk, author=request.user)
+        except BlogPost.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
         blog_post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,6 +1,5 @@
 from django.urls import path
-from blog.views import RegisterView, LoginView, LogoutView
-from .views import BlogPostListView, BlogPostUpdateView, BlogPostCreateView, BlogPostDeleteView
+from blog.views import RegisterView, LoginView, LogoutView, BlogPostCreateView, BlogPostListView, BlogPostUpdateView, BlogPostDeleteView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
