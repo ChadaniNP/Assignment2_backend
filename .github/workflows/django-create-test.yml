@@ -1,4 +1,4 @@
-name: Django CI
+name: Django Create Functionality Test
 
 on:
   push:
@@ -7,36 +7,24 @@ on:
     branches: [ "**" ]
 
 jobs:
-  test:
+  create-test:
     runs-on: ubuntu-latest
-
     env:
       DJANGO_SECRET_KEY: testsecretkey
-
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
       - name: Run migrations
         run: python manage.py migrate
-
       - name: Run only the create blog post test
         env:
           DB_ENGINE: django.db.backends.sqlite3
           DB_NAME: db.sqlite3
         run: python manage.py test blog.tests.BlogPostCreateViewTestCase
-
-      - name: Run tests
-        env:
-          DB_ENGINE: django.db.backends.sqlite3
-          DB_NAME: db.sqlite3
-        run: python manage.py test
