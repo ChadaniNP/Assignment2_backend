@@ -1,4 +1,4 @@
-name: Django Create Functionality Test
+name: Review of Create Functionality
 
 on:
   push:
