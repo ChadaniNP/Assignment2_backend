@@ -1,15 +1,20 @@
+# serializers.py - Contains serializers for user registration, login, and blog post operations
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import User, BlogPost
 
 class RegisterSerializer(serializers.ModelSerializer):
+    """
+    Serializer for registering a new user. Handles creation and validation.
+    """
     class Meta:
         model = User
         fields = ['username', 'email', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
+        # Create a new user with the provided validated data
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
@@ -18,6 +23,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
+    """
+    Serializer for user login. Validates credentials and returns token.
+    """
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255)
 
@@ -38,7 +46,7 @@ class LoginSerializer(serializers.Serializer):
 class BlogPostSerializer(serializers.ModelSerializer):
     """
     Serializer for BlogPost model. Handles serialization and validation.
-    
+
     The 'fields' attribute lists all model fields that should be exposed via the API.
     The 'read_only_fields' attribute ensures that certain fields (like 'id', 'author', 'created_at')
     are included in API responses but cannot be set or modified by the user. This is important for
