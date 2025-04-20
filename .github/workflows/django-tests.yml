@@ -26,15 +26,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Override DB settings for CI (use SQLite)
-        run: |
-          echo "DATABASE_URL=sqlite:///db.sqlite3" >> $GITHUB_ENV
-
       - name: Run migrations
         run: python manage.py migrate
 
       - name: Run only the create blog post test
-        run: python manage.py test blog.tests.BlogPostCreateViewTestCase
+        run: DATABASE_URL=sqlite:///db.sqlite3 python manage.py test blog.tests.BlogPostCreateViewTestCase
 
       - name: Run tests
-        run: python manage.py test
+        run: DATABASE_URL=sqlite:///db.sqlite3 python manage.py test
