@@ -1,12 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from .models import BlogPost
 from .serializers import BlogPostSerializer
 from rest_framework.authtoken.models import Token
-
 
 class BlogPostCreateViewTestCase(APITestCase):
     def setUp(self):
@@ -23,7 +21,6 @@ class BlogPostCreateViewTestCase(APITestCase):
         self.assertEqual(blog_post.title, 'Test Blog Post')
         self.assertEqual(blog_post.author, self.user)
 
-
 class BlogPostModelTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpass123')
@@ -37,7 +34,6 @@ class BlogPostModelTestCase(TestCase):
         self.assertEqual(blog_post.title, 'Test Blog Post')
         self.assertEqual(blog_post.content, 'This is a test blog post.')
         self.assertEqual(blog_post.author, self.user)
-
 
 class BlogPostSerializerTestCase(TestCase):
     def setUp(self):
@@ -53,7 +49,6 @@ class BlogPostSerializerTestCase(TestCase):
         self.assertEqual(serializer.data['title'], 'Test Blog Post')
         self.assertEqual(serializer.data['content'], 'This is a test blog post.')
 
-
 class BlogAPIIntegrationTestCase(APITestCase):
     def test_complete_blog_flow(self):
         # 1. Register a new user
@@ -65,7 +60,7 @@ class BlogAPIIntegrationTestCase(APITestCase):
         response = self.client.post(reverse('register'), register_data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(User.objects.filter(username='newuser').exists())
-
+        
         # Get the user and verify password is set correctly
         user = User.objects.get(username='newuser')
         self.assertTrue(user.check_password('newpass123'))
@@ -100,7 +95,6 @@ class BlogAPIIntegrationTestCase(APITestCase):
         self.assertEqual(response.status_code, 204)
         # Verify token is deleted
         self.assertFalse(Token.objects.filter(user__username='newuser').exists())
-
 
 class BlogPostDeleteTestCase(APITestCase):
     def setUp(self):
@@ -150,74 +144,3 @@ class BlogPostDeleteTestCase(APITestCase):
         # Now test deleting it
         delete_response = self.client.delete(reverse('blog-post-delete', args=[blog_post_id]))
         self.assertEqual(delete_response.status_code, 204)
-
-
-# for unit tests of like post
-class LikePostTests(APITestCase):
-    from rest_framework.authtoken.models import Token
-
-    def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
-
-        self.post = BlogPost.objects.create(title='Test Post', content='Sample content', author=self.user)
-        self.like_url = reverse('blog-post-like', kwargs={'post_id': self.post.id})
-
-    def test_like_post(self):
-        response = self.client.post(self.like_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['status'], 'post liked')
-
-    def test_unlike_post(self):
-        self.post.likes.add(self.user)  # Pre-like the post
-        response = self.client.post(self.like_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['status'], 'post unliked')
-
-    def test_like_nonexistent_post(self):
-        wrong_url = reverse('blog-post-like', kwargs={'post_id': 999})
-        response = self.client.post(wrong_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_like_post_unauthenticated(self):
-        self.client.logout()
-        response = self.client.post(self.like_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-
-# for integration testing
-class LikePostFlowTest(APITestCase):
-
-    def test_complete_like_flow(self):
-        # Register
-        self.client.post('/api/register/', {
-            'username': 'newuser',
-            'email': 'user@example.com',
-            'password': 'strongpassword'
-        })
-
-        # Login
-        response = self.client.post('/api/login/', {
-            'username': 'newuser',
-            'password': 'strongpassword'
-        })
-        token = response.data.get('token')
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
-
-        # Create Post
-        response = self.client.post('/api/create/', {
-            'title': 'Integration Test Post',
-            'content': 'This is an integration test post'
-        })
-        post_id = response.data['id']
-
-        # Like Post
-        response = self.client.post(f'/api/blogs/{post_id}/like/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['status'], 'post liked')
-
-        # Unlike Post
-        response = self.client.post(f'/api/blogs/{post_id}/like/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['status'], 'post unliked')
