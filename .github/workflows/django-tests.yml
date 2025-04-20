@@ -30,7 +30,13 @@ jobs:
         run: python manage.py migrate
 
       - name: Run only the create blog post test
-        run: DATABASE_URL=sqlite:///db.sqlite3 python manage.py test blog.tests.BlogPostCreateViewTestCase
+        env:
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: db.sqlite3
+        run: python manage.py test blog.tests.BlogPostCreateViewTestCase
 
       - name: Run tests
-        run: DATABASE_URL=sqlite:///db.sqlite3 python manage.py test
+        env:
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: db.sqlite3
+        run: python manage.py test
