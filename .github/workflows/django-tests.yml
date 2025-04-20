@@ -10,27 +10,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     env:
       DJANGO_SECRET_KEY: testsecretkey
-      POSTGRES_DB: test_db
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_pass
-      POSTGRES_HOST: localhost
 
     steps:
       - uses: actions/checkout@v3
@@ -45,8 +26,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Override DB settings for CI (use SQLite)
+        run: |
+          echo "DATABASE_URL=sqlite:///db.sqlite3" >> $GITHUB_ENV
+
       - name: Run migrations
         run: python manage.py migrate
 
       - name: Run tests
-        run: python manage.py test --keepdb
+        run: python manage.py test
