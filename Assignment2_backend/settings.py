@@ -83,24 +83,34 @@ WSGI_APPLICATION = 'Assignment2_backend.wsgi.app'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql_psycopg2'),
-        'NAME': os.environ.get('DB_NAME', 'neondb'),
-        'USER': os.environ.get('DB_USER', 'neondb_owner'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'npg_l6chXBMGq9EU'),
-        'HOST': os.environ.get('DB_HOST', 'ep-curly-lake-a7ywuelp-pooler.ap-southeast-2.aws.neon.tech'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
-        'CONN_MAX_AGE': 0,
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'sslmode': 'require',
-        },
-        'TEST': {
-            'NAME': os.environ.get('DB_TEST_NAME', 'test_neondb'),
-        },
+DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.postgresql_psycopg2')
+
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': os.environ.get('DB_NAME', BASE_DIR / "db.sqlite3"),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': os.environ.get('DB_NAME', 'neondb'),
+            'USER': os.environ.get('DB_USER', 'neondb_owner'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'npg_l6chXBMGq9EU'),
+            'HOST': os.environ.get('DB_HOST', 'ep-curly-lake-a7ywuelp-pooler.ap-southeast-2.aws.neon.tech'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 0,
+            'OPTIONS': {
+                'connect_timeout': 10,
+                'sslmode': 'require',
+            },
+            'TEST': {
+                'NAME': os.environ.get('DB_TEST_NAME', 'test_neondb'),
+            },
+        }
+    }
 
 
 # Password validation
