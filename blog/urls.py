@@ -1,7 +1,7 @@
 from django.urls import path
-from blog.views import RegisterView, LoginView, LogoutView, BlogPostListView, BlogPostCreateView, BlogPostDeleteView, \
+from blog.views import RegisterView, LoginView, LogoutView, BlogPostCreateView, BlogPostListView, BlogPostDeleteView, \
     LikePostView
-from django.urls import path, include
+from . import views
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
