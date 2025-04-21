@@ -33,4 +33,5 @@ jobs:
         python manage.py migrate
     - name: Run delete functionality tests
       run: |
-        python manage.py test blog.tests.DeleteFunctionalityTests.test_delete_functionality --noinput
+       python manage.py test blog.tests.BlogPostDeleteTestCase --noinput
+
