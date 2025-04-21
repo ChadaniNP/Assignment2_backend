@@ -109,7 +109,7 @@ class BlogPostListView(APIView):
         serializer = BlogPostSerializer(blog_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class BlogPostDeleteView(generics.DestroyAPIView):
+class BlogPostDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
