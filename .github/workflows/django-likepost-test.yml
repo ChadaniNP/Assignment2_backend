@@ -1,4 +1,4 @@
-name: Django CI
+name: Like Post Functionality CI
 
 on:
   push:
