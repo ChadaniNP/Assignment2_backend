@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -9,6 +17,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+>>>>>>> main
 build/
 develop-eggs/
 dist/
@@ -20,6 +29,21 @@ lib64/
 parts/
 sdist/
 var/
+<<<<<<< HEAD
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyc
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Virtual Environment
+=======
 *.egg-info/
 .installed.cfg
 *.egg
@@ -87,11 +111,27 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+>>>>>>> main
 .env
 .venv
 env/
 venv/
 ENV/
+<<<<<<< HEAD
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Vercel
+.vercel
+.now
+
+# Project specific
+blog_feature.zip
+=======
 env.bak/
 venv.bak/
 
@@ -129,3 +169,4 @@ docker-compose.override.yml
 # Ignore system files
 .DS_Store
 Thumbs.db
+>>>>>>> main
