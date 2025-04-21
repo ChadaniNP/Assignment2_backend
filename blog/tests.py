@@ -1,3 +1,4 @@
+from rest_framework import status
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
@@ -188,3 +189,72 @@ class BlogPostDeleteViewTestCase(APITestCase):
         response = self.client.delete(reverse('blog-post-delete', kwargs={'pk': self.blog_post.id}))
         self.assertEqual(response.status_code, 204)
         self.assertFalse(BlogPost.objects.filter(id=self.blog_post.id).exists())
+
+# for unit tests of like post
+class LikePostViewTestCase(APITestCase):
+    from rest_framework.authtoken.models import Token
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
+        self.post = BlogPost.objects.create(title='Test Post', content='Sample content', author=self.user)
+        self.like_url = reverse('blog-post-like', kwargs={'post_id': self.post.id})
+
+    def test_like_post(self):
+        response = self.client.post(self.like_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'post liked')
+
+    def test_unlike_post(self):
+        self.post.likes.add(self.user)  # Pre-like the post
+        response = self.client.post(self.like_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'post unliked')
+
+    def test_like_nonexistent_post(self):
+        wrong_url = reverse('blog-post-like', kwargs={'post_id': 999})
+        response = self.client.post(wrong_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_like_post_unauthenticated(self):
+        self.client.logout()
+        response = self.client.post(self.like_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+# for integration testing
+class LikePostFlowTest(APITestCase):
+
+    def test_complete_like_flow(self):
+        # Register
+        self.client.post('/api/register/', {
+            'username': 'newuser',
+            'email': 'user@example.com',
+            'password': 'strongpassword'
+        })
+
+        # Login
+        response = self.client.post('/api/login/', {
+            'username': 'newuser',
+            'password': 'strongpassword'
+        })
+        token = response.data.get('token')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+        # Create Post
+        response = self.client.post('/api/create/', {
+            'title': 'Integration Test Post',
+            'content': 'This is an integration test post'
+        })
+        post_id = response.data['id']
+
+        # Like Post
+        response = self.client.post(f'/api/blogs/{post_id}/like/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'post liked')
+
+        # Unlike Post
+        response = self.client.post(f'/api/blogs/{post_id}/like/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'post unliked')

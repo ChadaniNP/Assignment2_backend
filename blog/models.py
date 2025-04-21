@@ -8,3 +8,4 @@ class BlogPost(models.Model):
     content = models.TextField()              # Content/body of the blog post
     author = models.ForeignKey(User, on_delete=models.CASCADE)  # Reference to the post's author
     created_at = models.DateTimeField(auto_now_add=True)        # Timestamp of creation
+    likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
