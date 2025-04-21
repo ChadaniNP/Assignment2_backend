@@ -170,3 +170,21 @@ class BlogAPIIntegrationTestCase(APITestCase):
         response = self.client.patch(reverse('blog-post-edit', args=[blog_id]), patch_data, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['content'], 'Patched content.')
+
+class BlogPostDeleteViewTestCase(APITestCase):
+    def setUp(self):
+        # Create a test user and authenticate client
+        self.user = User.objects.create_user(username='deleteuser', password='testpass123')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        self.blog_post = BlogPost.objects.create(
+            title='Delete Me',
+            content='Please delete this post',
+            author=self.user
+        )
+
+    def test_user_can_delete_own_blog_post(self):
+        # Test if a user can delete their own blog post
+        response = self.client.delete(reverse('blog-post-delete', kwargs={'pk': self.blog_post.id}))
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(BlogPost.objects.filter(id=self.blog_post.id).exists())
